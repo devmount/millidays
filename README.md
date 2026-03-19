@@ -4,7 +4,7 @@ This is a little web app showing Internet time (aka Swatch internet time aka .be
 
 Demo: <https://millidays.devmount.com>
 
-<img width="1341" height="1043" alt="image" src="https://github.com/user-attachments/assets/eb75b9ee-ded3-4e49-b117-22af7470bc7b" />
+<img width="1291" height="563" alt="image" src="https://github.com/user-attachments/assets/8b89fc57-7df3-47ab-a1ff-bc6e74ec1233" />
 
 ## Get started
 
