@@ -25,3 +25,19 @@ export const fromDate = (date: Date, precision: number = 2): string => {
 export const now = (precision?: number): string => {
   return fromDate(new Date(), precision ?? 2);
 };
+
+export const toDate = (beats: number): Date => {
+  const seconds = (beats * 24 * 60 * 60) / 1000;
+
+  const d = new Date(seconds * 1000);
+  console.log(d.getTimezoneOffset());
+
+  var newDate = new Date(d.getTime() + d.getTimezoneOffset() * 60 * 1000);
+
+  var offset = d.getTimezoneOffset() / 60;
+  var hours = d.getHours();
+
+  newDate.setHours(hours - offset - 2);
+
+  return newDate;
+};

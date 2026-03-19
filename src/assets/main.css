@@ -1,7 +1,50 @@
-@import './base.css';
+/* semantic color variables for this project */
+:root {
+  --color-background: #0C0C0C;
+  --color-border: #481E14;
+  --color-heading: #9B3922;
+  --color-accent: #F2613F;
+  --color-text: white;
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
   font-weight: normal;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-background);
+  transition:
+    color 0.5s,
+    background-color 0.5s;
+  line-height: 1.6;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding: 4rem 0 0 0;
+}
+
+strong {
+  font-weight: 700;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+a {
+  color: var(--color-heading);
+
+  &:hover {
+    color: var(--color-accent);
+  }
 }
