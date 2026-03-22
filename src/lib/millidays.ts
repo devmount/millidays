@@ -3,8 +3,7 @@
 
 const format = (beats: number, precision: number): string => {
   const totalLength = 3 + (precision ? precision + 1 : 0);
-  const normalized = beats % 1000;
-  const millidays = normalized.toFixed(precision).padStart(totalLength, '0');
+  const millidays = beats.toFixed(precision).padStart(totalLength, '0');
 
   return `@${millidays}`;
 };
@@ -15,7 +14,9 @@ export const beats = (date?: Date): number => {
   const seconds =
     d.getUTCMilliseconds() / 1000 + d.getUTCSeconds() + d.getUTCMinutes() * 60 + (d.getUTCHours() + 1) * 3600;
 
-  return (seconds * 1000) / (60 * 60 * 24);
+  const beats = (seconds * 1000) / (60 * 60 * 24);
+
+  return beats >= 1000 ? beats - 1000 : beats;
 };
 
 export const fromDate = (date: Date, precision: number = 2): string => {
@@ -30,7 +31,6 @@ export const toDate = (beats: number): Date => {
   const seconds = (beats * 24 * 60 * 60) / 1000;
 
   const d = new Date(seconds * 1000);
-  console.log(d.getTimezoneOffset());
 
   var newDate = new Date(d.getTime() + d.getTimezoneOffset() * 60 * 1000);
 
