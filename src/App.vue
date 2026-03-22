@@ -51,8 +51,7 @@ onMounted(() => {
         Or <a href="https://en.wikipedia.org/wiki/Swatch_Internet_Time" target="_blank">Wikipedia</a> for the historical
         background of time values based on the decimal system.
       </p>
-    </section>
-    <section>
+
       <h2>Time conversion</h2>
       <table cellspacing="0">
         <tbody>
@@ -78,12 +77,14 @@ onMounted(() => {
           </tr>
         </tbody>
       </table>
+    </section>
+    <section>
 
       <h2>Common local times</h2>
       <div class="common-times">
         <table cellspacing="0">
           <tbody>
-            <tr v-for="h in [4, 6, 8, 10, 12, 15, 17, 20, 22]">
+            <tr v-for="h in Array.from(Array(24).keys())">
               <td>{{ h }}:00</td>
               <td><code>{{ fromDate(new Date(2026, 3, 19, h + 1, 0)) }}</code></td>
             </tr>
@@ -91,9 +92,9 @@ onMounted(() => {
         </table>
         <table cellspacing="0">
           <tbody>
-            <tr v-for="b in Array.from(Array(10).keys())">
-              <td><code>@{{ b }}00</code></td>
-              <td>{{ toDate(b * 100).toLocaleTimeString() }}</td>
+            <tr v-for="b in Array.from({ length: 20 }, (_, i) => i * 50)">
+              <td><code>@{{ b.toString().padStart(3, '0') }}</code></td>
+              <td>{{ toDate(b).toLocaleTimeString() }}</td>
             </tr>
           </tbody>
         </table>
