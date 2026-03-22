@@ -103,7 +103,7 @@ onMounted(() => {
   </main>
 
   <footer>
-    <p>Created by <a href="https://devmount.com">devmount</a>.</p>
+    <p>Millidays <code>v0.1.0</code> &mdash; Created by <a href="https://devmount.com">devmount</a>.</p>
     <p>Star this project on <a href="https://github.com/devmount/millidays" target="_blank">GitHub</a>.</p>
   </footer>
 </template>
