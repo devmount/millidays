@@ -23,8 +23,16 @@ export const fromDate = (date: Date, precision: number = 2): string => {
   return format(beats(date), precision);
 };
 
+export const fromDateParts = (date: Date, precision: number = 2): string[] => {
+  return format(beats(date), precision).substring(1).split('.');
+};
+
 export const now = (precision?: number): string => {
   return fromDate(new Date(), precision ?? 2);
+};
+
+export const nowParts = (precision?: number): string[] => {
+  return now(precision).substring(1).split('.');
 };
 
 export const toDate = (beats: number): Date => {
