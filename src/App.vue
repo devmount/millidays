@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { fromDate, fromDateParts, nowParts, toDate } from '@/lib/millidays';
+import { fromDateParts, now, nowParts, toDate } from '@/lib/millidays';
 import AnalogClock from "@/components/AnalogClock.vue";
 import { TimeMode } from './lib/clock';
 
@@ -23,7 +23,7 @@ onMounted(() => {
   setInterval(() => {
     millidays.value = nowParts();
     localtime.value = timeParts();
-    document.title = `${millidays.value} - ${localtime.value}`;
+    document.title = `${now()} - ${new Date().toLocaleTimeString()}`;
   }, millisecondsPerBeat);
 });
 </script>
