@@ -1,39 +1,51 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { fromDate, now, toDate } from '@/lib/millidays';
+import { fromDate, fromDateParts, nowParts, toDate } from '@/lib/millidays';
 import AnalogClock from "@/components/AnalogClock.vue";
 import { TimeMode } from './lib/clock';
 
-const millidays = ref('');
-const localtime = ref('');
+const millidays = ref(['0', '0']);
+const localtime = ref(['0', '0', '0', '']);
 
 const millisecondsPerBeat = (24 * 60 * 60) / 1000;
 
+const timeParts = () => {
+  const t = new Date().toLocaleTimeString();
+  const [time, mode] = t.split(' ');
+  const parts = time?.split(':') ?? ['0', '0', '0'];
+  if (mode) {
+    parts.push(mode);
+  }
+  return parts;
+};
+
 onMounted(() => {
   setInterval(() => {
-    millidays.value = now();
-    localtime.value = new Date().toLocaleTimeString();
+    millidays.value = nowParts();
+    localtime.value = timeParts();
     document.title = `${millidays.value} - ${localtime.value}`;
   }, millisecondsPerBeat);
 });
 </script>
 
 <template>
-  <header>
+  <header class="grid">
     <!-- Millidays -->
     <section class="beats">
       <analog-clock title="Internet" :mode="TimeMode.Millidays" />
-      <h1>{{ millidays }}</h1>
+      <h1>@<code>{{ millidays[0] }}</code>.<code>{{ millidays[1] }}</code></h1>
     </section>
     <!-- Local time -->
     <section class="local">
       <analog-clock title="Local" :mode="TimeMode.Milliseconds" />
-      <h2>{{ localtime }}</h2>
+      <h2>
+        <code>{{ localtime[0] }}</code>:<code>{{ localtime[1] }}</code>:<code>{{ localtime[2] }}</code>
+        <small>{{ localtime[3] ?? '' }}</small>
+      </h2>
     </section>
-
   </header>
 
-  <main>
+  <main class="grid">
     <section>
       <h2>Internet time</h2>
       <p>
@@ -53,27 +65,33 @@ onMounted(() => {
       </p>
 
       <h2>Time conversion</h2>
+      <p>Basic duration units and their counterparts.</p>
       <table cellspacing="0">
         <tbody>
           <tr>
-            <td>1 beat</td>
-            <td>1 min 26.4s</td>
+            <td><code>1</code> day</td>
+            <td>&rarr;</td>
+            <td><code>1000</code> beats</td>
           </tr>
           <tr>
-            <td>1 day</td>
-            <td>1000 beats</td>
+            <td><code>1</code> hour</td>
+            <td>&rarr;</td>
+            <td><code>41.67</code> beats</td>
           </tr>
           <tr>
-            <td>1 hour</td>
-            <td>41.67 beats</td>
+            <td><code>1</code> minute</td>
+            <td>&rarr;</td>
+            <td><code>0.694</code> beats</td>
           </tr>
           <tr>
-            <td>1 minute</td>
-            <td>0.694 beats</td>
+            <td><code>1</code> second</td>
+            <td>&rarr;</td>
+            <td><code>0.01157</code> beats</td>
           </tr>
-          <tr>
-            <td>1 second</td>
-            <td>0.01157 beats</td>
+          <tr class="accent">
+            <td><code>1</code> beat</td>
+            <td>&rarr;</td>
+            <td><code>1</code> min <code>26.4</code>s</td>
           </tr>
         </tbody>
       </table>
@@ -81,20 +99,28 @@ onMounted(() => {
     <section>
 
       <h2>Common local times</h2>
+      <p>These tables show common beats and times in 24-hour format converted to the local time of this browser.
+      </p>
       <div class="common-times">
         <table cellspacing="0">
           <tbody>
             <tr v-for="h in Array.from(Array(24).keys())">
-              <td>{{ h }}:00</td>
-              <td><code>{{ fromDate(new Date(2026, 3, 19, h + 1, 0)) }}</code></td>
+              <td><code>{{ String(h).padStart(2, '0') }}:00</code></td>
+              <td>&rarr;</td>
+              <td>
+                @<code>{{ fromDateParts(new Date(2026, 3, 19, h + 1, 0))[0] }}</code>.<code>{{ fromDateParts(new Date(2026, 3, 19, h + 1, 0))[1] }}</code>
+              </td>
             </tr>
           </tbody>
         </table>
         <table cellspacing="0">
           <tbody>
             <tr v-for="b in Array.from({ length: 20 }, (_, i) => i * 50)">
-              <td><code>@{{ b.toString().padStart(3, '0') }}</code></td>
-              <td>{{ toDate(b).toLocaleTimeString() }}</td>
+              <td>@<code>{{ String(b).padStart(3, '0') }}</code></td>
+              <td>&rarr;</td>
+              <td>
+                <code>{{ toDate(b).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }) }}</code>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -103,19 +129,17 @@ onMounted(() => {
   </main>
 
   <footer>
-    <p>Millidays <code>v0.1.0</code> &mdash; Created by <a href="https://devmount.com">devmount</a>.</p>
+    <p>Millidays v<code>0</code>.<code>1</code>.<code>0</code> &mdash; Created by <a
+        href="https://devmount.com">devmount</a>.</p>
     <p>Star this project on <a href="https://github.com/devmount/millidays" target="_blank">GitHub</a>.</p>
   </footer>
 </template>
 
 <style scoped>
 header {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
   align-items: stretch;
   gap: 4rem 8rem;
-  padding: 2rem;
+  padding: 3rem;
 
   section {
     display: flex;
@@ -123,15 +147,26 @@ header {
     justify-content: start;
     align-items: center;
 
+    &.beats h1,
+    &.local h2 {
+      font-size: 5rem;
+
+      code {
+        font-weight: 900;
+      }
+
+      small {
+        font-size: .5em;
+        margin-inline-start: .5rem;
+      }
+    }
 
     &.beats h1 {
-      font-size: 6rem;
       color: var(--color-accent);
       font-weight: 700;
     }
 
     &.local h2 {
-      font-size: 6rem;
       color: var(--color-heading);
       font-weight: 500;
     }
@@ -142,12 +177,9 @@ main {
   background: var(--color-background);
   background: linear-gradient(145deg, var(--color-background) 0%, var(--color-border) 100%);
 
-  display: grid;
-  grid-template-columns: 32rem 32rem;
-  justify-content: center;
   align-items: stretch;
   gap: 4rem;
-  padding: 2rem 8rem 6rem 8rem;
+  padding: 4rem 8rem 6rem 8rem;
 
   section {
     flex: 0 0 auto;
@@ -171,6 +203,10 @@ main {
       background-color: rgba(0, 0, 0, 25%);
     }
 
+    tr.accent {
+      color: var(--color-accent);
+    }
+
     td {
       padding: .125rem 1rem;
     }
@@ -189,8 +225,14 @@ footer {
   align-items: center;
 }
 
+.grid {
+  display: grid;
+  grid-template-columns: 32rem 32rem;
+  justify-content: center;
+}
+
 @media (max-width: 1200px) {
-  main {
+  .grid {
     grid-template-columns: 1fr;
     padding-left: 2rem;
     padding-right: 2rem;
