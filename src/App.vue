@@ -129,8 +129,10 @@ onMounted(() => {
   </main>
 
   <footer>
-    <p>Millidays v<code>0</code>.<code>1</code>.<code>0</code> &mdash; Created by <a
-        href="https://devmount.com">devmount</a>.</p>
+    <p>
+      Millidays v<code>0</code>.<code>1</code>.<code>1</code> &mdash;
+      Created by <a href="https://devmount.com">devmount</a>.
+    </p>
     <p>Star this project on <a href="https://github.com/devmount/millidays" target="_blank">GitHub</a>.</p>
   </footer>
 </template>
