@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { fromDateParts, now, nowParts, toDate } from '@/lib/millidays';
-import AnalogClock from "@/components/AnalogClock.vue";
 import { TimeMode } from './lib/clock';
+import AnalogClock from "@/components/AnalogClock.vue";
+import DotBeat from "@/components/DotBeat.vue";
+import DigitalTime from './components/DigitalTime.vue';
 
 const millidays = ref(['0', '0']);
 const localtime = ref(['0', '0', '0', '']);
@@ -19,6 +21,14 @@ const timeParts = () => {
   return parts;
 };
 
+const beats = ref<number>(123);
+const convertedBeats = computed(() => beats.value
+  ? toDate(beats.value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: '2-digit', hour12: false })
+  : ''
+);
+const ctime = ref();
+const convertedTime = computed(() => fromDateParts(ctime.value ?? new Date()));
+
 onMounted(() => {
   setInterval(() => {
     millidays.value = nowParts();
@@ -33,15 +43,12 @@ onMounted(() => {
     <!-- Millidays -->
     <section class="beats">
       <analog-clock title="Internet" :mode="TimeMode.Millidays" />
-      <h1>@<code>{{ millidays[0] }}</code>.<code>{{ millidays[1] }}</code></h1>
+      <h1><dot-beat :parts="millidays" /></h1>
     </section>
     <!-- Local time -->
     <section class="local">
       <analog-clock title="Local" :mode="TimeMode.Milliseconds" />
-      <h2>
-        <code>{{ localtime[0] }}</code>:<code>{{ localtime[1] }}</code>:<code>{{ localtime[2] }}</code>
-        <small>{{ localtime[3] ?? '' }}</small>
-      </h2>
+      <h2><digital-time :parts="localtime" /></h2>
     </section>
   </header>
 
@@ -105,6 +112,24 @@ onMounted(() => {
           </tr>
         </tbody>
       </table>
+
+      <div class="conversion">
+        <div>
+          <div class="input">
+            <span class="icon">@</span>
+            <input type="number" min="0" v-model="beats" />
+          </div>
+          <span>&rarr;</span>
+          <span>{{ convertedBeats }}</span>
+        </div>
+        <div>
+          <div class="input">
+            <input type="time" v-model="ctime" />
+          </div>
+          <span>&rarr;</span>
+          <dot-beat :parts="convertedTime" />
+        </div>
+      </div>
     </section>
     <section>
 
@@ -117,16 +142,14 @@ onMounted(() => {
             <tr v-for="h in Array.from(Array(24).keys())">
               <td><code>{{ String(h).padStart(2, '0') }}:00</code></td>
               <td>&rarr;</td>
-              <td>
-                @<code>{{ fromDateParts(new Date(2026, 3, 19, h + 1, 0))[0] }}</code>.<code>{{ fromDateParts(new Date(2026, 3, 19, h + 1, 0))[1] }}</code>
-              </td>
+              <td><dot-beat :parts="fromDateParts(new Date(2026, 3, 19, h + 1, 0))" /></td>
             </tr>
           </tbody>
         </table>
         <table cellspacing="0">
           <tbody>
             <tr v-for="b in Array.from({ length: 20 }, (_, i) => i * 50)">
-              <td>@<code>{{ String(b).padStart(3, '0') }}</code></td>
+              <td><dot-beat :parts="[String(b).padStart(3, '0')]" /></td>
               <td>&rarr;</td>
               <td>
                 <code>{{ toDate(b).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }) }}</code>
@@ -162,25 +185,25 @@ header {
     &.beats h1,
     &.local h2 {
       font-size: 5rem;
-
-      code {
-        font-weight: 900;
-      }
-
-      small {
-        font-size: .5em;
-        margin-inline-start: .5rem;
-      }
+      font-weight: 700;
     }
 
     &.beats h1 {
       color: var(--color-accent);
-      font-weight: 700;
     }
 
     &.local h2 {
       color: var(--color-heading);
       font-weight: 500;
+
+      :deep(code) {
+        font-weight: 700;
+      }
+
+      :deep(small) {
+        font-size: .5em;
+        margin-inline-start: .5rem;
+      }
     }
   }
 }
@@ -248,6 +271,19 @@ footer {
     grid-template-columns: 1fr;
     padding-left: 2rem;
     padding-right: 2rem;
+  }
+}
+
+.conversion {
+  padding: 1rem;
+  margin-top: 2rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--border-radius);
+
+  &>div {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
   }
 }
 </style>
