@@ -93,6 +93,16 @@ onMounted(() => {
             <td>&rarr;</td>
             <td><code>1</code> min <code>26.4</code>s</td>
           </tr>
+          <tr class="accent">
+            <td><code>10</code> beats</td>
+            <td>&rarr;</td>
+            <td><code>14</code> min <code>24</code>s</td>
+          </tr>
+          <tr class="accent">
+            <td><code>100</code> beats</td>
+            <td>&rarr;</td>
+            <td><code>1</code>h <code>24</code> min</td>
+          </tr>
         </tbody>
       </table>
     </section>
