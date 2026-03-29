@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { fromDateParts, now, nowParts, toDate } from '@/lib/millidays';
+import { timeToBeatsParts, now, nowParts, beatsToTime, timeParts, beatsToTimeParts } from '@/lib/millidays';
 import { TimeMode } from './lib/clock';
+import { PhAt, PhClock } from "@phosphor-icons/vue";
 import AnalogClock from "@/components/AnalogClock.vue";
 import DotBeat from "@/components/DotBeat.vue";
 import DigitalTime from './components/DigitalTime.vue';
@@ -11,23 +12,21 @@ const localtime = ref(['0', '0', '0', '']);
 
 const millisecondsPerBeat = (24 * 60 * 60) / 1000;
 
-const timeParts = () => {
-  const t = new Date().toLocaleTimeString();
-  const [time, mode] = t.split(' ');
-  const parts = time?.split(':') ?? ['0', '0', '0'];
-  if (mode) {
-    parts.push(mode);
-  }
-  return parts;
-};
+const beats = ref<number>();
+const convertedBeats = computed(() => beatsToTimeParts(beats.value));
 
-const beats = ref<number>(123);
-const convertedBeats = computed(() => beats.value
-  ? toDate(beats.value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: '2-digit', hour12: false })
-  : ''
-);
-const ctime = ref();
-const convertedTime = computed(() => fromDateParts(ctime.value ?? new Date()));
+const time = ref<string>();
+const convertedTime = computed(() => {
+  const d = new Date();
+  if (time.value) {
+    const [h, m] = time.value.split(':').map(v => v)
+    d.setHours(h ? parseInt(h) : 0);
+    d.setMinutes(m ? parseInt(m) : 0);
+    d.setSeconds(0);
+    d.setMilliseconds(0);
+  }
+  return timeToBeatsParts(d);
+});
 
 onMounted(() => {
   setInterval(() => {
@@ -114,35 +113,37 @@ onMounted(() => {
       </table>
 
       <div class="conversion">
+        <div>Try it out yourself:</div>
         <div>
           <div class="input">
-            <span class="icon">@</span>
-            <input type="number" min="0" v-model="beats" />
+            <ph-at class="icon" :size="20" />
+            <input type="number" min="0" maxlength="3" v-model="beats" />
           </div>
           <span>&rarr;</span>
-          <span>{{ convertedBeats }}</span>
+          <digital-time class="result" v-if="beats" :parts="convertedBeats" />
         </div>
         <div>
           <div class="input">
-            <input type="time" v-model="ctime" />
+            <ph-clock class="icon" :size="20" />
+            <input type="time" v-model="time" />
           </div>
           <span>&rarr;</span>
-          <dot-beat :parts="convertedTime" />
+          <dot-beat class="result" v-if="time" :parts="convertedTime" />
         </div>
       </div>
     </section>
     <section>
 
       <h2>Common local times</h2>
-      <p>These tables show common beats and times in 24-hour format converted to the local time of this browser.
+      <p>These tables show common beats and times converted to the local time of this browser.
       </p>
       <div class="common-times">
         <table cellspacing="0">
           <tbody>
             <tr v-for="h in Array.from(Array(24).keys())">
-              <td><code>{{ String(h).padStart(2, '0') }}:00</code></td>
+              <td class="text-right"><digital-time :parts="[String(h), '00']" /></td>
               <td>&rarr;</td>
-              <td><dot-beat :parts="fromDateParts(new Date(2026, 3, 19, h + 1, 0))" /></td>
+              <td><dot-beat :parts="timeToBeatsParts(new Date(2026, 3, 19, h, 0))" /></td>
             </tr>
           </tbody>
         </table>
@@ -151,8 +152,8 @@ onMounted(() => {
             <tr v-for="b in Array.from({ length: 20 }, (_, i) => i * 50)">
               <td><dot-beat :parts="[String(b).padStart(3, '0')]" /></td>
               <td>&rarr;</td>
-              <td>
-                <code>{{ toDate(b).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }) }}</code>
+              <td class="text-right">
+                <digital-time :parts="beatsToTimeParts(b)" />
               </td>
             </tr>
           </tbody>
@@ -280,10 +281,22 @@ footer {
   border: 1px dashed var(--color-border);
   border-radius: var(--border-radius);
 
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
   &>div {
     display: flex;
     gap: 1rem;
     align-items: center;
+
+    input {
+      width: 12rem;
+    }
+
+    .result {
+      font-size: 1.5rem;
+    }
   }
 }
 </style>

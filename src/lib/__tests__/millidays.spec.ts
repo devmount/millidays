@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { beats, fromDate, now, toDate } from '@/lib/millidays';
+import { beats, timeToBeats, now, beatsToTime } from '@/lib/millidays';
 
 describe('millidays.ts', () => {
   describe('beats function', () => {
@@ -45,51 +45,51 @@ describe('millidays.ts', () => {
     });
   });
 
-  describe('fromDate function', () => {
+  describe('timeToBeats function', () => {
     it('returns formatted beat string from date', () => {
       const date = new Date('2026-03-22T12:00:00Z');
-      const result = fromDate(date);
+      const result = timeToBeats(date);
       expect(result).toMatch(/^@\d+\.\d{2}$/);
     });
 
     it('uses precision parameter', () => {
       const date = new Date('2026-03-22T12:00:00Z');
-      const result0 = fromDate(date, 0);
-      const result3 = fromDate(date, 3);
+      const result0 = timeToBeats(date, 0);
+      const result3 = timeToBeats(date, 3);
       expect(result0).toMatch(/^@\d+$/);
       expect(result3).toMatch(/^@\d+\.\d{3}$/);
     });
 
     it('pads with zeros to maintain format', () => {
       const date = new Date('2026-03-22T00:00:00Z');
-      const result = fromDate(date);
+      const result = timeToBeats(date);
       const parts = result.split('@')[1] ?? [];
       expect(parts.length).toBeGreaterThanOrEqual(3);
     });
 
     it('uses default precision of 2', () => {
       const date = new Date('2026-03-22T12:00:00Z');
-      const result = fromDate(date);
+      const result = timeToBeats(date);
       const parts = result.split('.');
       expect(parts[1]).toHaveLength(2);
     });
 
     it('formats with @ prefix', () => {
       const date = new Date('2026-03-22T12:00:00Z');
-      const result = fromDate(date);
+      const result = timeToBeats(date);
       expect(result).toMatch(/^@/);
     });
 
     it('handles zero precision', () => {
       const date = new Date('2026-03-22T12:00:00Z');
-      const result = fromDate(date, 0);
+      const result = timeToBeats(date, 0);
       expect(result).not.toContain('.');
     });
 
     it('returns consistent results for same time', () => {
       const date = new Date('2026-03-22T12:00:00Z');
-      const result1 = fromDate(date, 2);
-      const result2 = fromDate(date, 2);
+      const result1 = timeToBeats(date, 2);
+      const result2 = timeToBeats(date, 2);
       expect(result1).toBe(result2);
     });
   });
@@ -129,40 +129,40 @@ describe('millidays.ts', () => {
     });
   });
 
-  describe('toDate function', () => {
+  describe('beatsToTime function', () => {
     it('converts beats number to Date object', () => {
-      const result = toDate(500);
+      const result = beatsToTime(500);
       expect(result).toBeInstanceOf(Date);
     });
 
     it('returns a valid Date', () => {
-      const result = toDate(500);
+      const result = beatsToTime(500);
       expect(!isNaN(result.getTime())).toBe(true);
     });
 
     it('handles beats at start of day', () => {
-      const result = toDate(0);
+      const result = beatsToTime(0);
       expect(result).toBeInstanceOf(Date);
     });
 
     it('handles beats at end of day', () => {
-      const result = toDate(999);
+      const result = beatsToTime(999);
       expect(result).toBeInstanceOf(Date);
     });
 
     it('handles fractional beats', () => {
-      const result = toDate(500.5);
+      const result = beatsToTime(500.5);
       expect(result).toBeInstanceOf(Date);
     });
 
     it('converts beats in ascending order to later dates', () => {
-      const date1 = toDate(100);
-      const date2 = toDate(500);
+      const date1 = beatsToTime(100);
+      const date2 = beatsToTime(500);
       expect(date2.getTime()).toBeGreaterThan(date1.getTime());
     });
 
     it('handles very small beats values', () => {
-      const result = toDate(0.001);
+      const result = beatsToTime(0.001);
       expect(result).toBeInstanceOf(Date);
     });
   });
@@ -202,12 +202,12 @@ describe('millidays.ts', () => {
       expect(result).toBe(0);
     });
 
-    it('fromDate returns same formatted beat for same UTC moment', () => {
+    it('timeToBeats returns same formatted beat for same UTC moment', () => {
       const date1 = new Date('2026-03-22T15:30:45.000+01:00');
       const date2 = new Date('2026-03-22T16:30:45.000+02:00');
 
-      const formatted1 = fromDate(date1, 2);
-      const formatted2 = fromDate(date2, 2);
+      const formatted1 = timeToBeats(date1, 2);
+      const formatted2 = timeToBeats(date2, 2);
 
       expect(formatted1).toBe(formatted2);
     });
