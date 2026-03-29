@@ -1,23 +1,32 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { fromDateParts, now, nowParts, toDate } from '@/lib/millidays';
-import AnalogClock from "@/components/AnalogClock.vue";
+import { computed, onMounted, ref } from 'vue';
+import { timeToBeatsParts, now, nowParts, beatsToTime, timeParts, beatsToTimeParts } from '@/lib/millidays';
 import { TimeMode } from './lib/clock';
+import { PhAt, PhClock } from "@phosphor-icons/vue";
+import AnalogClock from "@/components/AnalogClock.vue";
+import DotBeat from "@/components/DotBeat.vue";
+import DigitalTime from './components/DigitalTime.vue';
 
 const millidays = ref(['0', '0']);
 const localtime = ref(['0', '0', '0', '']);
 
 const millisecondsPerBeat = (24 * 60 * 60) / 1000;
 
-const timeParts = () => {
-  const t = new Date().toLocaleTimeString();
-  const [time, mode] = t.split(' ');
-  const parts = time?.split(':') ?? ['0', '0', '0'];
-  if (mode) {
-    parts.push(mode);
+const beats = ref<number>();
+const convertedBeats = computed(() => beatsToTimeParts(beats.value));
+
+const time = ref<string>();
+const convertedTime = computed(() => {
+  const d = new Date();
+  if (time.value) {
+    const [h, m] = time.value.split(':').map(v => v)
+    d.setHours(h ? parseInt(h) : 0);
+    d.setMinutes(m ? parseInt(m) : 0);
+    d.setSeconds(0);
+    d.setMilliseconds(0);
   }
-  return parts;
-};
+  return timeToBeatsParts(d);
+});
 
 onMounted(() => {
   setInterval(() => {
@@ -33,15 +42,12 @@ onMounted(() => {
     <!-- Millidays -->
     <section class="beats">
       <analog-clock title="Internet" :mode="TimeMode.Millidays" />
-      <h1>@<code>{{ millidays[0] }}</code>.<code>{{ millidays[1] }}</code></h1>
+      <h1><dot-beat :parts="millidays" /></h1>
     </section>
     <!-- Local time -->
     <section class="local">
       <analog-clock title="Local" :mode="TimeMode.Milliseconds" />
-      <h2>
-        <code>{{ localtime[0] }}</code>:<code>{{ localtime[1] }}</code>:<code>{{ localtime[2] }}</code>
-        <small>{{ localtime[3] ?? '' }}</small>
-      </h2>
+      <h2><digital-time :parts="localtime" /></h2>
     </section>
   </header>
 
@@ -105,31 +111,49 @@ onMounted(() => {
           </tr>
         </tbody>
       </table>
+
+      <div class="conversion">
+        <div>Try it out yourself:</div>
+        <div>
+          <div class="input">
+            <ph-at class="icon" :size="20" />
+            <input type="number" min="0" maxlength="3" v-model="beats" />
+          </div>
+          <span>&rarr;</span>
+          <digital-time class="result" v-if="beats" :parts="convertedBeats" />
+        </div>
+        <div>
+          <div class="input">
+            <ph-clock class="icon" :size="20" />
+            <input type="time" v-model="time" />
+          </div>
+          <span>&rarr;</span>
+          <dot-beat class="result" v-if="time" :parts="convertedTime" />
+        </div>
+      </div>
     </section>
     <section>
 
       <h2>Common local times</h2>
-      <p>These tables show common beats and times in 24-hour format converted to the local time of this browser.
+      <p>These tables show common beats and times converted to the local time of this browser.
       </p>
       <div class="common-times">
         <table cellspacing="0">
           <tbody>
             <tr v-for="h in Array.from(Array(24).keys())">
-              <td><code>{{ String(h).padStart(2, '0') }}:00</code></td>
+              <td class="text-right"><digital-time :parts="[String(h), '00']" /></td>
               <td>&rarr;</td>
-              <td>
-                @<code>{{ fromDateParts(new Date(2026, 3, 19, h + 1, 0))[0] }}</code>.<code>{{ fromDateParts(new Date(2026, 3, 19, h + 1, 0))[1] }}</code>
-              </td>
+              <td><dot-beat :parts="timeToBeatsParts(new Date(2026, 3, 19, h, 0))" /></td>
             </tr>
           </tbody>
         </table>
         <table cellspacing="0">
           <tbody>
             <tr v-for="b in Array.from({ length: 20 }, (_, i) => i * 50)">
-              <td>@<code>{{ String(b).padStart(3, '0') }}</code></td>
+              <td><dot-beat :parts="[String(b).padStart(3, '0')]" /></td>
               <td>&rarr;</td>
-              <td>
-                <code>{{ toDate(b).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }) }}</code>
+              <td class="text-right">
+                <digital-time :parts="beatsToTimeParts(b)" />
               </td>
             </tr>
           </tbody>
@@ -162,25 +186,25 @@ header {
     &.beats h1,
     &.local h2 {
       font-size: 5rem;
-
-      code {
-        font-weight: 900;
-      }
-
-      small {
-        font-size: .5em;
-        margin-inline-start: .5rem;
-      }
+      font-weight: 700;
     }
 
     &.beats h1 {
       color: var(--color-accent);
-      font-weight: 700;
     }
 
     &.local h2 {
       color: var(--color-heading);
       font-weight: 500;
+
+      :deep(code) {
+        font-weight: 700;
+      }
+
+      :deep(small) {
+        font-size: .5em;
+        margin-inline-start: .5rem;
+      }
     }
   }
 }
@@ -248,6 +272,31 @@ footer {
     grid-template-columns: 1fr;
     padding-left: 2rem;
     padding-right: 2rem;
+  }
+}
+
+.conversion {
+  padding: 1rem;
+  margin-top: 2rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--border-radius);
+
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &>div {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+
+    input {
+      width: 12rem;
+    }
+
+    .result {
+      font-size: 1.5rem;
+    }
   }
 }
 </style>

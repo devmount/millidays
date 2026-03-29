@@ -19,33 +19,38 @@ export const beats = (date?: Date): number => {
   return beats >= 1000 ? beats - 1000 : beats;
 };
 
-export const fromDate = (date: Date, precision: number = 2): string => {
+export const timeToBeats = (date: Date, precision: number = 2): string => {
   return format(beats(date), precision);
 };
 
-export const fromDateParts = (date: Date, precision: number = 2): string[] => {
+export const timeToBeatsParts = (date: Date, precision: number = 2): string[] => {
   return format(beats(date), precision).substring(1).split('.');
 };
 
 export const now = (precision?: number): string => {
-  return fromDate(new Date(), precision ?? 2);
+  return timeToBeats(new Date(), precision ?? 2);
 };
 
 export const nowParts = (precision?: number): string[] => {
   return now(precision).substring(1).split('.');
 };
 
-export const toDate = (beats: number): Date => {
-  const seconds = (beats * 24 * 60 * 60) / 1000;
+export const beatsToTime = (beats: number): Date => {
+  const milliseconds = beats * 24 * 60 * 60;
+  return new Date(milliseconds);
+};
 
-  const d = new Date(seconds * 1000);
+export const timeParts = (date?: Date) => {
+  const t = date ? date.toLocaleTimeString() : new Date().toLocaleTimeString();
+  const [time, mode] = t.split(' ');
+  const parts = time?.split(':') ?? ['0', '0', '0'];
+  if (mode) {
+    parts.push(mode);
+  }
+  return parts;
+};
 
-  var newDate = new Date(d.getTime() + d.getTimezoneOffset() * 60 * 1000);
-
-  var offset = d.getTimezoneOffset() / 60;
-  var hours = d.getHours();
-
-  newDate.setHours(hours - offset - 2);
-
-  return newDate;
+export const beatsToTimeParts = (beats?: number): string[] => {
+  const d = beatsToTime(beats ?? 0);
+  return timeParts(d);
 };

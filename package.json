@@ -16,6 +16,7 @@
     "format": "oxfmt src/"
   },
   "dependencies": {
+    "@phosphor-icons/vue": "^2.2.1",
     "vue": "beta"
   },
   "devDependencies": {
