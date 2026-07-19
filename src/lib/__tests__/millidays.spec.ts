@@ -1,5 +1,26 @@
-import { describe, it, expect } from 'vitest';
-import { beats, timeToBeats, now, beatsToTime } from '@/lib/millidays';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import {
+  beats,
+  timeToBeats,
+  timeToBeatsParts,
+  now,
+  nowParts,
+  beatsToTime,
+  timeParts,
+  beatsToTimeParts,
+} from '@/lib/millidays';
+
+const TIMEZONES = [
+  'UTC',
+  'Europe/Berlin',
+  'America/New_York',
+  'Pacific/Kiritimati', // UTC+14
+  'Etc/GMT+12', // UTC-12
+  'Asia/Kolkata', // UTC+5:30
+  'Asia/Kathmandu', // UTC+5:45
+  'Australia/Lord_Howe', // UTC+10:30 / DST +11
+  'Asia/Singapore', // UTC+8
+];
 
 describe('millidays.ts', () => {
   describe('beats function', () => {
@@ -233,6 +254,147 @@ describe('millidays.ts', () => {
 
       expect(beatsEnd).toBeGreaterThan(beatsStart);
       expect(beatsEnd).toBeLessThan(1000);
+    });
+  });
+
+  describe('beats function edge cases', () => {
+    it('wraps around to 0 at the BMT day boundary (23:00 UTC)', () => {
+      const result = beats(new Date('2026-03-22T23:00:00.000Z'));
+      expect(result).toBe(0);
+    });
+
+    it('is just under 1000 right before the BMT day boundary', () => {
+      const result = beats(new Date('2026-03-22T22:59:59.999Z'));
+      expect(result).toBeCloseTo(1000, 0);
+      expect(result).toBeLessThan(1000);
+    });
+  });
+
+  describe('timeToBeatsParts function', () => {
+    it('returns beat and fractional parts as separate array entries', () => {
+      const date = new Date('2026-03-22T12:00:00Z');
+      const parts = timeToBeatsParts(date);
+      expect(parts).toHaveLength(2);
+      expect(parts[0]).toMatch(/^\d{3}$/);
+      expect(parts[1]).toMatch(/^\d{2}$/);
+    });
+
+    it('respects precision', () => {
+      const date = new Date('2026-03-22T12:00:00Z');
+      expect(timeToBeatsParts(date, 3)[1]).toHaveLength(3);
+    });
+
+    it('omits the fractional part entirely when precision is 0', () => {
+      const date = new Date('2026-03-22T12:00:00Z');
+      const parts = timeToBeatsParts(date, 0);
+      expect(parts).toHaveLength(1);
+    });
+  });
+
+  describe('nowParts function', () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('returns current beat as [beats, fraction] using default precision', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-03-22T12:00:00Z'));
+      const parts = nowParts();
+      expect(parts).toEqual(['541', '67']);
+    });
+
+    it('respects a custom precision', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-03-22T12:00:00Z'));
+      const parts = nowParts(0);
+      expect(parts).toEqual(['542']);
+    });
+  });
+
+  describe('timeParts function', () => {
+    afterEach(() => {
+      vi.useRealTimers();
+      vi.unstubAllEnvs();
+      vi.restoreAllMocks();
+    });
+
+    it('uses the current time when no date is provided', () => {
+      vi.useFakeTimers();
+      vi.stubEnv('TZ', 'UTC');
+      vi.setSystemTime(new Date('2026-03-22T14:05:00Z'));
+      expect(timeParts()).toEqual(['2', '05', '00', 'PM']);
+    });
+
+    it('splits hours, minutes, seconds and am/pm mode into separate entries', () => {
+      vi.stubEnv('TZ', 'UTC');
+      const date = new Date('2026-03-22T09:05:03Z');
+      expect(timeParts(date)).toEqual(['9', '05', '03', 'AM']);
+    });
+
+    it.each(TIMEZONES)('produces a valid, well-formed result in %s', (tz) => {
+      vi.stubEnv('TZ', tz);
+      const date = new Date('2026-03-22T09:05:03Z');
+      const parts = timeParts(date);
+      expect(parts.length).toBeGreaterThanOrEqual(3);
+      expect(parts[0]).toMatch(/^\d{1,2}$/);
+      expect(parts[1]).toMatch(/^\d{2}$/);
+      expect(parts[2]).toMatch(/^\d{2}$/);
+    });
+
+    it('produces different local hours for the same instant in different timezones', () => {
+      const date = new Date('2026-03-22T09:05:03Z');
+
+      vi.stubEnv('TZ', 'UTC');
+      const utcHour = timeParts(date)[0];
+
+      vi.stubEnv('TZ', 'Pacific/Kiritimati');
+      const kiritimatiHour = timeParts(date)[0];
+
+      expect(kiritimatiHour).not.toBe(utcHour);
+    });
+
+    it('does not append a mode entry when the locale time string has no am/pm marker', () => {
+      vi.spyOn(Date.prototype, 'toLocaleTimeString').mockReturnValue('14:05:03');
+      expect(timeParts(new Date())).toEqual(['14', '05', '03']);
+    });
+
+    it('handles an empty locale time string without throwing', () => {
+      vi.spyOn(Date.prototype, 'toLocaleTimeString').mockReturnValue('');
+      expect(timeParts(new Date())).toEqual(['']);
+    });
+  });
+
+  describe('beatsToTimeParts function', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it('defaults to beats 0 (Unix epoch midnight)', () => {
+      vi.stubEnv('TZ', 'UTC');
+      expect(beatsToTimeParts()).toEqual(['12', '00', '00', 'AM']);
+    });
+
+    it('converts a given beats value to local time parts', () => {
+      vi.stubEnv('TZ', 'UTC');
+      expect(beatsToTimeParts(500)).toEqual(['12', '00', '00', 'PM']);
+    });
+
+    it.each(TIMEZONES)('produces a well-formed result in %s', (tz) => {
+      vi.stubEnv('TZ', tz);
+      const parts = beatsToTimeParts(250);
+      expect(parts.length).toBeGreaterThanOrEqual(3);
+      expect(parts[0]).toMatch(/^\d{1,2}$/);
+      expect(parts[1]).toMatch(/^\d{2}$/);
+    });
+
+    it('produces different local hours for the same beats value in different timezones', () => {
+      vi.stubEnv('TZ', 'UTC');
+      const utcHour = beatsToTimeParts(500)[0];
+
+      vi.stubEnv('TZ', 'Pacific/Kiritimati');
+      const kiritimatiHour = beatsToTimeParts(500)[0];
+
+      expect(kiritimatiHour).not.toBe(utcHour);
     });
   });
 });
