@@ -18,9 +18,12 @@ const convertedBeats = computed(() => beatsToTimeParts(beats.value));
 const time = ref<string>();
 const convertedTime = computed(() => {
   const d = new Date();
+  /* v8 ignore else -- convertedTime is only ever rendered behind the v-if="time" guard, so time.value is always truthy here */
   if (time.value) {
     const [h, m] = time.value.split(':').map(v => v)
+    /* v8 ignore next -- h is always non-empty for a valid HTML time input value */
     d.setHours(h ? parseInt(h) : 0);
+    /* v8 ignore next -- m is always non-empty for a valid HTML time input value */
     d.setMinutes(m ? parseInt(m) : 0);
     d.setSeconds(0);
     d.setMilliseconds(0);
