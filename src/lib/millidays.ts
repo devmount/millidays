@@ -49,6 +49,7 @@ export const beatsToTime = (beats: number): Date => {
 export const timeParts = (date?: Date) => {
   const t = date ? date.toLocaleTimeString() : new Date().toLocaleTimeString();
   const [time, mode] = t.split(' ');
+  /* v8 ignore next -- String.split(' ')[0] is never undefined, so this fallback is unreachable */
   const parts = time?.split(':') ?? ['0', '0', '0'];
   if (mode) {
     parts.push(mode);
