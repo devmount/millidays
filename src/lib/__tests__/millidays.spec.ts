@@ -186,6 +186,16 @@ describe('millidays.ts', () => {
       const result = beatsToTime(0.001);
       expect(result).toBeInstanceOf(Date);
     });
+
+    it.each([0, 100, 250, 500, 750, 999])('round-trips through beats() for beats=%d', (b) => {
+      expect(beats(beatsToTime(b))).toBeCloseTo(b, 6);
+    });
+
+    it('maps beats 0 to BMT midnight (23:00 UTC), one hour before the UTC day boundary', () => {
+      const result = beatsToTime(0);
+      expect(result.getUTCHours()).toBe(23);
+      expect(result.getUTCMinutes()).toBe(0);
+    });
   });
 
   describe('timezone consistency', () => {
@@ -369,14 +379,19 @@ describe('millidays.ts', () => {
       vi.unstubAllEnvs();
     });
 
-    it('defaults to beats 0 (Unix epoch midnight)', () => {
+    it('defaults to beats 0 (BMT midnight, 11pm UTC)', () => {
       vi.stubEnv('TZ', 'UTC');
-      expect(beatsToTimeParts()).toEqual(['12', '00', '00', 'AM']);
+      expect(beatsToTimeParts()).toEqual(['11', '00', '00', 'PM']);
     });
 
     it('converts a given beats value to local time parts', () => {
       vi.stubEnv('TZ', 'UTC');
-      expect(beatsToTimeParts(500)).toEqual(['12', '00', '00', 'PM']);
+      expect(beatsToTimeParts(500)).toEqual(['11', '00', '00', 'AM']);
+    });
+
+    it('converts beats 0 to 7am in Singapore, not 7:30am (regression: Singapore was UTC+7:30 pre-1982)', () => {
+      vi.stubEnv('TZ', 'Asia/Singapore');
+      expect(beatsToTimeParts(0)).toEqual(['7', '00', '00', 'AM']);
     });
 
     it.each(TIMEZONES)('produces a well-formed result in %s', (tz) => {

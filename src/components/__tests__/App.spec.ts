@@ -51,7 +51,7 @@ describe('App.vue', () => {
 
     const result = wrapper.find('.conversion .result');
     expect(result.exists()).toBe(true);
-    expect(result.text()).toBe('12:00:00PM');
+    expect(result.text()).toBe('11:00:00AM');
   });
 
   it('hides the time-to-beats conversion result until a value is entered', () => {

@@ -36,8 +36,14 @@ export const nowParts = (precision?: number): string[] => {
 };
 
 export const beatsToTime = (beats: number): Date => {
+  const now = new Date();
+  // Beat @000 is BMT midnight (00:00 UTC+1 = 23:00 UTC), one hour before the UTC day
+  // boundary. Anchoring to today (rather than the Unix epoch) also avoids resolving
+  // historical UTC offsets (e.g. Singapore was UTC+7:30 before 1982) in timezones whose
+  // offset has since changed.
+  const bmtMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - 60 * 60 * 1000;
   const milliseconds = beats * 24 * 60 * 60;
-  return new Date(milliseconds);
+  return new Date(bmtMidnight + milliseconds);
 };
 
 export const timeParts = (date?: Date) => {
