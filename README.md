@@ -27,10 +27,10 @@ pnpm build
 ### Run Unit Tests with [Vitest](https://vitest.dev/)
 
 ```bash
-pnpm test:unit
+pnpm test
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### Lint with [oxlint](https://oxc.rs/docs/guide/usage/linter.html)
 
 ```bash
 pnpm lint
