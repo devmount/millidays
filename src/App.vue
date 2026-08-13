@@ -2,9 +2,9 @@
 import { computed, onMounted, ref } from 'vue';
 import { timeToBeatsParts, now, nowParts, beatsToTime, timeParts, beatsToTimeParts } from '@/lib/millidays';
 import { TimeMode } from './lib/clock';
-import { PhAt, PhClock } from "@phosphor-icons/vue";
-import AnalogClock from "@/components/AnalogClock.vue";
-import DotBeat from "@/components/DotBeat.vue";
+import { PhAt, PhClock } from '@phosphor-icons/vue';
+import AnalogClock from '@/components/AnalogClock.vue';
+import DotBeat from '@/components/DotBeat.vue';
 import DigitalTime from './components/DigitalTime.vue';
 
 const millidays = ref(['0', '0']);
@@ -20,7 +20,7 @@ const convertedTime = computed(() => {
   const d = new Date();
   /* v8 ignore else -- convertedTime is only ever rendered behind the v-if="time" guard, so time.value is always truthy here */
   if (time.value) {
-    const [h, m] = time.value.split(':').map(v => v)
+    const [h, m] = time.value.split(':').map((v) => v);
     /* v8 ignore next -- h is always non-empty for a valid HTML time input value */
     d.setHours(h ? parseInt(h) : 0);
     /* v8 ignore next -- m is always non-empty for a valid HTML time input value */
@@ -58,18 +58,18 @@ onMounted(() => {
     <section>
       <h2>Internet time</h2>
       <p>
-        <i>Internet time</i> (aka <i>.beat</i> time or <i>Swatch Internet time</i>)
-        is a <strong>decimal time system</strong> which is <strong>timezone agnostic</strong>.
+        <i>Internet time</i> (aka <i>.beat</i> time or <i>Swatch Internet time</i>) is a
+        <strong>decimal time system</strong> which is <strong>timezone agnostic</strong>.
       </p>
       <p>
-        Instead of seconds, minutes and hours, it features <i>millidays</i> (aka <i>beats</i>),
-        which represent the 1000th part of the mean solar day.
-        It starts at midnight UTC+1 with <code>@000</code> and counts up to <code>@999</code>.
+        Instead of seconds, minutes and hours, it features <i>millidays</i> (aka <i>beats</i>), which represent the
+        1000th part of the mean solar day. It starts at midnight UTC+1 with <code>@000</code> and counts up to
+        <code>@999</code>.
       </p>
       <p>
-        Check out <a href="https://gwil.garden/internet-time/">gwil.garden/internet-time</a> for a nice overview
-        and different implementations of this topic.
-        Or <a href="https://en.wikipedia.org/wiki/Swatch_Internet_Time" target="_blank">Wikipedia</a> for the historical
+        Check out <a href="https://gwil.garden/internet-time/">gwil.garden/internet-time</a> for a nice overview and
+        different implementations of this topic. Or
+        <a href="https://en.wikipedia.org/wiki/Swatch_Internet_Time" target="_blank">Wikipedia</a> for the historical
         background of time values based on the decimal system.
       </p>
 
@@ -110,7 +110,7 @@ onMounted(() => {
           <tr class="accent">
             <td><code>100</code> beats</td>
             <td>&rarr;</td>
-            <td><code>1</code>h <code>24</code> min</td>
+            <td><code>2</code>h <code>24</code> min</td>
           </tr>
         </tbody>
       </table>
@@ -136,10 +136,8 @@ onMounted(() => {
       </div>
     </section>
     <section>
-
       <h2>Common local times</h2>
-      <p>These tables show common beats and times converted to the local time of this browser.
-      </p>
+      <p>These tables show common beats and times converted to the local time of this browser.</p>
       <div class="common-times">
         <table cellspacing="0">
           <tbody>
@@ -167,8 +165,8 @@ onMounted(() => {
 
   <footer>
     <p>
-      Millidays v<code>0</code>.<code>2</code>.<code>1</code> &mdash;
-      Created by <a href="https://devmount.com">devmount</a>.
+      Millidays v<code>0</code>.<code>2</code>.<code>1</code> &mdash; Created by
+      <a href="https://devmount.com">devmount</a>.
     </p>
     <p>Star this project on <a href="https://github.com/devmount/millidays" target="_blank">GitHub</a>.</p>
   </footer>
@@ -205,8 +203,8 @@ header {
       }
 
       :deep(small) {
-        font-size: .5em;
-        margin-inline-start: .5rem;
+        font-size: 0.5em;
+        margin-inline-start: 0.5rem;
       }
     }
   }
@@ -223,7 +221,7 @@ main {
   section {
     flex: 0 0 auto;
 
-    &>.common-times {
+    & > .common-times {
       display: flex;
       flex-wrap: wrap;
       align-items: start;
@@ -247,7 +245,7 @@ main {
     }
 
     td {
-      padding: .125rem 1rem;
+      padding: 0.125rem 1rem;
     }
 
     td:nth-child(2) {
@@ -288,7 +286,7 @@ footer {
   flex-direction: column;
   gap: 1rem;
 
-  &>div {
+  & > div {
     display: flex;
     gap: 1rem;
     align-items: center;
