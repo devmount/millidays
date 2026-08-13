@@ -4,9 +4,9 @@ import { beats } from '@/lib/millidays';
 import { onMounted, useTemplateRef } from 'vue';
 
 const props = defineProps<{
-  mode: TimeMode,
-  title: string,
-}>()
+  mode: TimeMode;
+  title: string;
+}>();
 
 const wrapper = useTemplateRef('wrapper');
 
@@ -22,17 +22,17 @@ onMounted(() => {
 
   // Draw ticks and labels
   for (let i = 0; i < baseTicks; i++) {
-    const majorLabel = (i === 0 ? base : (i / baseTicks * base)).toString();
-    const minorLabel = (i).toString();
+    const majorLabel = (i === 0 ? base : (i / baseTicks) * base).toString();
+    const minorLabel = i.toString();
 
-    if ((i % majorTicks == 0 || i == 0)) {
-      wrapper.value?.appendChild(rect(15, .75, 35, i * rotationOffset, 'hsl(0, 0%, 70%)'));
+    if (i % majorTicks == 0 || i == 0) {
+      wrapper.value?.appendChild(rect(15, 0.75, 35, i * rotationOffset, 'hsl(0, 0%, 70%)'));
       wrapper.value?.appendChild(text(majorLabel, 30, i * rotationOffset - 90, 'hsl(0, 0%, 70%)', '.4rem', '700'));
     } else if (i % minorTicks == 0) {
-      wrapper.value?.appendChild(rect(12, .75, 35, i * rotationOffset, 'hsl(0, 0%, 40%)'));
+      wrapper.value?.appendChild(rect(12, 0.75, 35, i * rotationOffset, 'hsl(0, 0%, 40%)'));
       wrapper.value?.appendChild(text(minorLabel, 32, i * rotationOffset - 90, 'hsl(0, 0%, 30%)', '.25rem'));
     } else {
-      wrapper.value?.appendChild(rect(10, .5, 35, i * rotationOffset, 'hsl(0, 0%, 30%)'));
+      wrapper.value?.appendChild(rect(10, 0.5, 35, i * rotationOffset, 'hsl(0, 0%, 30%)'));
     }
   }
 
@@ -48,15 +48,14 @@ onMounted(() => {
     const time = new Date();
     const bts = beats();
 
-    const minorDegrees = props.mode === TimeMode.Millidays
-      ? bts * (360 / 1) - 90
-      : (time.getMilliseconds() * 6 / 1000) + (time.getSeconds() * 6) - 90;
-    const majorDegrees = props.mode === TimeMode.Millidays
-      ? bts * (360 / 100) - 90
-      : (time.getSeconds() / 10) + (time.getMinutes() * 6) - 90;
-    const baseDegrees = props.mode === TimeMode.Millidays
-      ? bts * (360 / 1000) - 90
-      : (time.getMinutes() / 2.5) + (time.getHours() * 30) - 90;
+    const minorDegrees =
+      props.mode === TimeMode.Millidays
+        ? bts * (360 / 1) - 90
+        : (time.getMilliseconds() * 6) / 1000 + time.getSeconds() * 6 - 90;
+    const majorDegrees =
+      props.mode === TimeMode.Millidays ? bts * (360 / 100) - 90 : time.getSeconds() / 10 + time.getMinutes() * 6 - 90;
+    const baseDegrees =
+      props.mode === TimeMode.Millidays ? bts * (360 / 1000) - 90 : time.getMinutes() / 2.5 + time.getHours() * 30 - 90;
 
     minorHand.style.transform = `rotate(${minorDegrees}deg)`;
     majorHand.style.transform = `rotate(${majorDegrees}deg)`;
