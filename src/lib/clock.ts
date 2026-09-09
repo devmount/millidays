@@ -22,6 +22,31 @@ export const rect = (width = 10, height = 1.5, x = 35, rotation = 0, color = 'bl
   return node;
 };
 
+// Create a clock hand as a line, with a small gap at the hub. Its angle is set via plain coordinates
+// (not `transform`), since Firefox visibly degrades anti-aliasing on shapes whose transform changes every frame.
+export const hand = (length: number, width: number, color = 'white') => {
+  const node = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+
+  node.setAttribute('stroke', color);
+  node.setAttribute('stroke-width', width.toString());
+  node.setAttribute('stroke-linecap', 'round');
+  node.dataset.length = length.toString();
+
+  return node;
+};
+
+export const setHandAngle = (node: SVGLineElement, angle: number) => {
+  const width = Number(node.getAttribute('stroke-width'));
+  const length = Number(node.dataset.length);
+  const rad = (angle * Math.PI) / 180;
+  const inner = width / 2;
+
+  node.setAttribute('x1', (inner * Math.cos(rad)).toString());
+  node.setAttribute('y1', (inner * Math.sin(rad)).toString());
+  node.setAttribute('x2', (length * Math.cos(rad)).toString());
+  node.setAttribute('y2', (length * Math.sin(rad)).toString());
+};
+
 export const text = (text = '', radius = 30, angle = 0, color = 'black', fontSize = '1rem', fontWeight = '400') => {
   const node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   const x = (radius - text.length + 1) * Math.cos((Math.PI / 180) * angle); // x coordinate in percent
