@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { rect, text, TimeMode } from '@/lib/clock';
+import { hand, rect, setHandAngle, text, TimeMode } from '@/lib/clock';
 import { beats } from '@/lib/millidays';
 import { onMounted, useTemplateRef } from 'vue';
 
@@ -36,9 +36,9 @@ onMounted(() => {
     }
   }
 
-  const minorHand = rect(40, 1, 0, 0, 'white'); // second or millibeat
-  const majorHand = rect(25, 1.5, 0, 0, 'white'); // minute or decibeat
-  const baseHand = rect(15, 2, 0, 0, 'white'); // hour or beat
+  const minorHand = hand(40, 1); // second or millibeat
+  const majorHand = hand(25, 1.5); // minute or decibeat
+  const baseHand = hand(15, 2); // hour or beat
 
   wrapper.value?.appendChild(minorHand);
   wrapper.value?.appendChild(majorHand);
@@ -57,9 +57,9 @@ onMounted(() => {
     const baseDegrees =
       props.mode === TimeMode.Millidays ? bts * (360 / 1000) - 90 : time.getMinutes() / 2.5 + time.getHours() * 30 - 90;
 
-    minorHand.style.transform = `rotate(${minorDegrees}deg)`;
-    majorHand.style.transform = `rotate(${majorDegrees}deg)`;
-    baseHand.style.transform = `rotate(${baseDegrees}deg)`;
+    setHandAngle(minorHand, minorDegrees);
+    setHandAngle(majorHand, majorDegrees);
+    setHandAngle(baseHand, baseDegrees);
 
     requestAnimationFrame(render);
   };
